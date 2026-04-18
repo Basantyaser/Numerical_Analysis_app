@@ -9,9 +9,9 @@ import theme
 from theme import Theme
 import sympy as sp 
 
+
 ctk.set_appearance_mode("light")
 # ctk.set_default_color_theme("blue")
-
 
 class MainApp(ctk.CTk):
     def __init__(self):
@@ -51,8 +51,6 @@ class MainApp(ctk.CTk):
         self.display.grid(row=0, column=1, sticky="nsew")
         
     
-
-
 class Sidebar(ctk.CTkFrame):
     def __init__(self, parent, controller, **kwargs):
         super().__init__(parent, **kwargs)
@@ -551,8 +549,6 @@ class false_position(ctk.CTkFrame):
     
 
 
-
-
 class simple_point(ctk.CTkFrame):
     def __init__(self, parent, controller, **args):
         super().__init__(parent, **args)
@@ -565,16 +561,152 @@ class simple_point(ctk.CTkFrame):
         
         self.method_name = ctk.CTkLabel(self, text="Simple Fixed Point")
         theme.label_title(self.method_name)
+        self.method_name.grid(row=0, column=0, columnspan=8)
         
         self.error_message  =ctk.CTkLabel(self, text="")
         theme.label_error(self.error_message)
-        self.error_message.grid(row=3, column=0, columnspan=8)
-        
+        self.error_message.grid(row=5, column=0, columnspan=8)
         
         
         #---labels---
+        self.f_label = ctk.CTkLabel(self, text="f(x)")
+        self.g_label = ctk.CTkLabel(self, text="g(x)")
+        self.x_label = ctk.CTkLabel(self, text="Inintial Guess")
+        self.epilson_label = ctk.CTkLabel(self, text="Epilson")
         
         
+        #---- string variables ---
+        self.f_var = ctk.StringVar()
+        self.g_var = ctk.StringVar()
+        self.x_var = ctk.StringVar()
+        self.epilson_var = ctk.StringVar()
+        
+        
+        #----Entries---
+        self.f_entry = ctk.CTkEntry(self, textvariable=self.f_var)
+        self.g_entry = ctk.CTkEntry(self, textvariable=self.g_var)
+        self.x_entry = ctk.CTkEntry(self, textvariable=self.x_var)
+        self.epilson_entry = ctk.CTkEntry(self, textvariable=self.epilson_var)
+        
+        self.widgets = [[self.f_entry, self.g_entry, self.x_entry,], [self.f_label, self.g_label, self.x_label]]
+        
+        for i, (entry, label) in enumerate(zip(self.widgets[0], self.widgets[1])):
+            theme.entry_default(entry)
+            theme.label_default(label)
+            
+            label.grid(row=1, column=2*i, sticky="ew")
+            entry.grid(row=1, column=2*i+1, sticky="ew")
+            
+        theme.label_default(self.epilson_label)
+        self.epilson_label.grid(row=2, column=0, sticky="ew")
+        
+        theme.entry_default(self.epilson_entry)
+        self.epilson_entry.grid(row=2, column=1, sticky="ew")
+        
+        
+        self.tutorial_word = ctk.CTkLabel(self, text="Example :")
+        theme.label_default(self.tutorial_word)
+        self.tutorial_word.grid(row=3, column=0, sticky="e")
+        self.tutorial_label = ctk.CTkLabel(self, text="Start by converting the equation into a fixed-point form, where x is isolated on one side as x = g(x). For example, given x³ + x − 1 = 0, we rearrange it algebraically to x = 1 − x³, which becomes the iteration function g(x). Then choose an initial guess such as x₀ = 0.5 and apply repeated substitution using xₙ₊₁ = 1 − (xₙ)³. This generates successive values like x₁ = 0.875, x₂ ≈ 0.330, x₃ ≈ 0.964, and so on until the values stabilize. The accuracy is checked using |xₙ₊₁ − xₙ| < ε, which determines when to stop the iterations.", wraplength=800, justify="left")
+        theme.label_black(self.tutorial_label)
+        self.tutorial_label.grid(row=3, column=1, columnspan=6)
+        
+        
+        self.calculate_btn = ctk.CTkButton(self, text="calculate", command=self.calculate)
+        self.clear_btn = ctk.CTkButton(self, text="clear", command=self.clear)
+        
+        theme.button_secondary(self.calculate_btn)
+        theme.button_secondary(self.clear_btn)
+        self.calculate_btn.grid(row=4, column=0, columnspan=4)
+        self.clear_btn.grid(row=4, column=4, columnspan=4)
+        
+        
+    def clear(self):
+        self.f_var.set("")
+        self.g_var.set("")
+        self.x_var.set("")
+        self.epilson_var.set("")
+    
+    def calculate(self):
+        
+        
+        
+        try:
+            x = float(self.x_var.get())
+            epilson = float(self.epilson_var.get())
+        except ValueError:
+            self.error_message.configure(text="Invalid Numeric Value")
+            return
+        
+        f = self.f_var.get().strip()
+        g = self.g_var.get().strip()
+        
+        if f=="" or g=="":
+            self.error_message.configure(text="ENTER f(x) and g(x) Properly")
+            return
+        
+        allowed_functions = {name: getattr(math,name) for name in ["sin", "cos", "sqrt", "tan","exp","log"]}
+        
+        try:
+            eval(f, {"x":x, **allowed_functions})
+            eval(g, {"x":x, **allowed_functions})
+        except Exception as e :
+            self.error_message.configure(text=f"Invalid Function! {e}")
+            return
+        
+        
+        self.show_table()    
+        i=1
+        
+        error = float("inf")
+        
+        while error > epilson:
+            gx_val = eval(g, {"x":x, **allowed_functions})
+            
+            xplus1 = gx_val
+            
+            if xplus1 !=0:
+                error= abs((xplus1 - x)/xplus1) *100
+            else:
+                error = 0
+            
+            
+            self.table.insert(
+                "",
+                "end",
+                values=(i, round(x, 6), round(gx_val, 6), "-" if i==1 else round(error, 6))
+            )
+            
+            x = xplus1
+            i = i+1
+            
+            
+                
+            
+                
+            
+        
+        
+        
+        
+        
+        
+    
+    def show_table(self):
+        self.error_message.configure(text="")
+        
+        if hasattr(self, "table"):
+            self.table.destroy()
+            
+        self.table_columns = ("i", "X", "f(x)", "Epilson")
+        
+        self.table = ttk.Treeview(self, columns=self.table_columns, show="headings")
+        
+        for column in self.table_columns:
+            self.table.heading(f"{column}", text=column)
+            self.table.column(f"{column}", width=150, anchor="center")
+        
+        self.table.grid(row=6, column=2, columnspan=3, sticky="nsew")
         
         
 class newtons_mathod(ctk.CTkFrame):
@@ -626,7 +758,7 @@ class newtons_mathod(ctk.CTkFrame):
         #---Button----
         self.calculate_btn = ctk.CTkButton(self, text="Calculate", command=self.calculate)
         self.show_derivaitve_btn = ctk.CTkButton(self, text="Show Derivative", command=self.show_derivative)
-        self.clear_btn = ctk.CTkButton(self, text="clear")
+        self.clear_btn = ctk.CTkButton(self, text="clear", command=self.clear)
         
         theme.button_primary(self.calculate_btn)
         theme.button_primary(self.show_derivaitve_btn)
@@ -637,6 +769,13 @@ class newtons_mathod(ctk.CTkFrame):
         self.clear_btn.grid(row=3, column=5)
         
         
+        self.visuals_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.visuals_frame.grid(row=4, column=0, columnspan=8)
+        
+    def clear(self):
+        self.f_var.set("")
+        self.initial_guess_var.set("")
+        self.epson_var.set("")
     
     def show_derivative(self):
         
@@ -645,24 +784,85 @@ class newtons_mathod(ctk.CTkFrame):
         expr = sp.sympify(expr_str)
         self.df = sp.diff(expr, self.symX)
         
-        if not hasattr(self, "derv_label"):
-           self.derv_label = ctk.CTkLabel(self, text="")
-           theme.label_title(self.derv_label)
-           self.derv_label.grid(row=2, column=0, columnspan=8, sticky="nsew")
-
-        self.derv_label.configure(text=f"The Derivative : {self.df}")
-       
+        self.error_message.configure(text=f"the Derivative : {self.df}")
+        theme.label_title(self.error_message)
+    
+    def show_table(self):
+        self.error_message.configure(text="")
+        
+        #-- Destroy the table if exists
+        if hasattr(self, "table"):
+            self.table.destroy()
+        
+        self.table_columns = ("x", "f(x)", "f'(x)", "epilson")
+        self.table = ttk.Treeview(self.visuals_frame,
+                                  columns=self.table_columns, 
+                                  show="headings")
+        
+        for column in (self.table_columns):
+            self.table.heading(f"{column}", text=column)
+            self.table.column(f"{column}", width=150, anchor="center")
+        
+        self.table.grid(sticky="nsew")
     
     def calculate(self):
-        pass
+        self.show_table()
+        
+        try:
+            x = float(self.initial_guess_var.get())
+            epson = float(self.epson_var.get())
+        
+        except:
+            self.error_message.configure(text="Invalid Numeric Input!")
+            return
+        
+        self.fx = self.f_var.get().strip()
+        
+        if self.fx =="":
+            self.error_message.configure(text="Function is Empty")
+            return
+        
+        self.allowed_functions = {name: getattr(math, name) for name in ["sin", "cos", "sqrt", "tan", "exp", "log"]}
+        try:
+            eval(self.fx, {"x":x, **self.allowed_functions})
+        except Exception as e :
+            self.error_message.configure(text=f"Invalid functions! {e}")
+            return
+        
+        
+        
+        error = float("inf")
+        while(error > epson):
+           fx_val = eval(self.fx, {"x":x, **self.allowed_functions})
+           
+           symX = sp.Symbol('x')
+           expr = sp.sympify(self.fx)
+           df_expr = sp.diff(expr, symX)
 
-
-
-
-
-
-
-
+           dfx_val = float(df_expr.subs(symX, x))
+           if dfx_val == 0:
+            self.error_message.configure(text="Derivative is zero!")
+            return
+           x_next = x - (fx_val / dfx_val)
+           
+           if x_next != 0:
+            error = abs((x_next - x) / x_next) * 100
+           else:
+              error = 0
+            
+           self.table.insert(
+            "",
+            "end",
+            values=(
+                round(x, 6),
+                round(fx_val, 6),
+                round(dfx_val, 6),
+                "-" if error == float("inf") else round(error, 6)))
+        
+            
+        
+           x = x_next
+                        
 
 
 class secant_method(ctk.CTkFrame):

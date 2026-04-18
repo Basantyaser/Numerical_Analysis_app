@@ -15,6 +15,7 @@ class Theme:
         # Primary
         "primary": "#307DD4",
         "primary_hover": "#0557B5",
+        
 
         # Secondary
         "secondary": "#2b2b2b",
@@ -115,6 +116,12 @@ def label_title(widget):
         widget,
         text_color=Theme.COLORS["primary"],
         font=Theme.FONTS["title"],
+    )
+def label_black(widget):
+    apply_style(
+        widget,
+        text_color="grey",
+        font=Theme.FONTS["normal"],
     )
 
 
