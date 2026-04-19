@@ -50,6 +50,45 @@ class MainApp(ctk.CTk):
         self.display = DisplayWindow(self.container, self)
         self.display.grid(row=0, column=1, sticky="nsew")
         
+        
+        #--- Table styling ----
+        style = ttk.Style(self)   # attach to THIS root
+        style.theme_use("default")
+
+        style.configure(
+            "Treeview",
+            background="#E0E0E0",
+            foreground="black",
+            rowheight=28,
+            fieldbackground="#E0E0E0",
+            bordercolor="#307DD4",
+            borderwidth=1
+        )
+
+        style.configure(
+            "Treeview.Heading",
+            background="#307DD4",
+            foreground="white",
+            font=("Arial", 11, "bold")
+        )
+        
+        style.configure(
+            "Treeview",
+            background="#E0E0E0",
+            foreground="black",
+            rowheight=30,
+            fieldbackground="#E0E0E0",
+            bordercolor="#307DD4",
+            borderwidth=1,
+            font=("Arial", 12, "bold")  
+            )
+
+        style.map(
+            "Treeview",
+            background=[("selected", "#307DD4")],
+            foreground=[("selected", "white")]
+        )
+        
     
 class Sidebar(ctk.CTkFrame):
     def __init__(self, parent, controller, **kwargs):
@@ -806,7 +845,6 @@ class newtons_mathod(ctk.CTkFrame):
         self.table.grid(sticky="nsew")
     
     def calculate(self):
-        self.show_table()
         
         try:
             x = float(self.initial_guess_var.get())
@@ -830,6 +868,7 @@ class newtons_mathod(ctk.CTkFrame):
             return
         
         
+        self.show_table()
         
         error = float("inf")
         while(error > epson):
@@ -869,17 +908,221 @@ class secant_method(ctk.CTkFrame):
     def __init__(self, parent, controller, **args):
         super().__init__(parent, **args)
         self.controller = controller
-        self.label1 = ctk.CTkLabel(self, text="hello from secant method class")
-        self.label1.grid()
+        self.iter = 1
+        for i in range(8):
+            self.columnconfigure(i, weight=1)
+            self.rowconfigure(i, weight=1)
+            
+            
+        
+        self.method_name = ctk.CTkLabel(self, text="SECANT METHOD ")
+        theme.label_title(self.method_name)
+        self.method_name.grid(row=0, column=0, columnspan=8)
+        
+        self.error_message = ctk.CTkLabel(self, text="")
+        theme.label_black(self.error_message)
+        self.error_message.grid(row=5, column=0, columnspan=8)
+        
+        #--- labels----
+        self.f_label = ctk.CTkLabel(self, text="Enter f(x)")
+        self.xminus1_label = ctk.CTkLabel(self, text="Enter X-1")
+        self.x_label = ctk.CTkLabel(self, text="Enter X")
+        self.epilson_label = ctk.CTkLabel(self, text="Enter Epilson")
+        
+        #--- string Variables----
+        self.f_var = ctk.StringVar()
+        self.xminus1_var = ctk.StringVar()
+        self.x_var = ctk.StringVar()
+        self.epilson_var = ctk.StringVar()
+        
+        #----Entries----
+        self.f_entry = ctk.CTkEntry(self, textvariable=self.f_var)
+        self.xminus1_entry = ctk.CTkEntry(self, textvariable=self.xminus1_var)
+        self.x_entry = ctk.CTkEntry(self, textvariable=self.x_var)
+        self.epilson_entry = ctk.CTkEntry(self, textvariable=self.epilson_var)
+        
+        
+        self.widgets = [[self.f_label, self.xminus1_label, self.x_label], [self.f_entry, self.xminus1_entry, self.x_entry]]
+        
+        for i , (label, entry) in enumerate(zip(self.widgets[0], self.widgets[1])):
+            theme.label_default(label)
+            theme.entry_default(entry)
+            
+            label.grid(row=1, column=2*i, sticky="ew")
+            entry.grid(row=1, column=2*i+1, sticky="ew")
+            
+            
+        theme.label_default(self.epilson_label)
+        theme.entry_default(self.epilson_entry)
+        
+        self.epilson_label.grid(row=2, column=0, sticky="ew")
+        self.epilson_entry.grid(row=2, column=1, sticky="ew")
+        self.show_tutorial()
+        
+        #--- Buttons ---
+        self.calculate_btn = ctk.CTkButton(self, text="Calculate", command=self.calculate)
+        self.iteration_btn = ctk.CTkButton(self, text="show Iteration", command=self.show_iteration)
+        self.clear_btn = ctk.CTkButton(self, text="Clear", command=self.clear)
+        
+        theme.button_secondary(self.calculate_btn)
+        theme.button_secondary(self.iteration_btn)
+        theme.button_secondary(self.clear_btn)
+        
+        self.calculate_btn.grid(row=4, column=1, sticky="ew")
+        self.iteration_btn.grid(row=4, column=3, sticky="ew")
+        self.clear_btn.grid(row=4, column=5, sticky="ew")
+        
+        self.visuals_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.visuals_frame.grid(row=6, column=1, columnspan=4)
+        
+    def show_tutorial(self):
+        self.tutorial_name = ctk.CTkLabel(self, text="")
+        self.tutorial_name.configure(text="Example:")
+        theme.label_default(self.tutorial_name)
+        self.tutorial_name.grid(row=3, column=0, sticky="ew")
+        self.tutorial = ctk.CTkLabel(self, text="The Secant Method is an iterative technique used to solve f(x) = 0 using two initial guesses x(n-1) and x(n). The next value is computed as x(n+1) = x(n) - f(x(n)) * (x(n) - x(n-1)) / (f(x(n)) - f(x(n-1))). At each step, a secant line between two points on the curve is used to estimate the root, and the process repeats until the values converge." , wraplength=700, justify="left")
+        theme.label_black(self.tutorial)
+        self.tutorial.grid(row=3, column=1, columnspan=5) 
+    
+    def show_iteration(self):
 
+      if hasattr(self, "iter2_val"):
+
+          x0, fx0, x1, fx1, x2 = self.iter2_val
+
+          self.tutorial_name.configure(text="Iteration 2:")
+          self.tutorial.configure(
+    text=(
+        f"f(x0)=f({round(x0,3)})={round(fx0,3)} |     "
+        f"f(x1)=f({round(x1,3)})={round(fx1,3)} |      ε={round(self.epilson,3)}\n"
+
+        f"x2=x1-[f(x1)(x0-x1)]/[f(x0)-f(x1)]\n"
+
+        f"x2={round(x1,3)}-[{round(fx1,3)}({round(x0,3)}-{round(x1,3)})]/"
+        f"[{round(fx0,3)}-{round(fx1,3)}]={round(x2,3)} |      "
+        f"error=|{round(x2,3)}-{round(x1,3)}|={round(abs(x2-x1),3)}"
+    )
+)
+          
+
+      else:
+           self.tutorial_name.configure(text="Iteration 2:")
+           self.tutorial.configure(text="No data yet.")
+                
+    def clear(self):
+        self.error_message.configure(text="")
+        self.show_tutorial()
+        if hasattr(self, "table"):
+            self.table.destroy()
+        for entry in  self.widgets[1]:
+            entry.delete(0, "end")
+            
+        self.epilson_var.set("")
+            
+    
+    def calculate(self):
+        
+        allowed_functions = {name: getattr(math, name) for name in ["sin", "cos", "sqrt", "log", "exp", "tan"]}
+        
+        try:
+            self.xminus1 = float(self.xminus1_var.get())
+            self.x = float(self.x_var.get())
+            self.epilson = float(self.epilson_var.get())
+        except ValueError:
+            self.error_message.configure(text="Invalide Numeric Input!")
+            return
+        
+        self.fx = self.f_var.get().strip()
+        
+        if self.fx == "":
+            self.error_message.configure(text="Function Can't Empty!")
+            return
+        else:
+            try:
+              eval(self.fx, {"x":self.x, **allowed_functions})
+            except Exception as e:
+                self.error_message.configure(text=f"Enter a Proper Function! error {e}")
+                return
+            
+        self.show_table()
+            
+        error = float("inf")
+        
+        while(error > self.epilson):
+            
+            
+            #freeze the values 
+            self.x0  = self.xminus1
+            self.x1 = self.x
+            
+            #update the values later 
+            
+            
+            self.fxminus1 = eval(self.fx, {"x":self.x0, **allowed_functions})
+            self.fx_val = eval(self.fx, {"x":self.x1, **allowed_functions})
+            
+            self.deminator =  (self.fxminus1 - self.fx_val)
+            
+            if self.deminator == 0:
+                self.error_message.configure(text=f"Value error denimator is zero at iteration {self.iter}")
+                return
+            
+            
+            
+            self.xplus1 = self.x1 - (self.fx_val*(self.x0- self.x1)/self.deminator)
+            
+            if self.xplus1 != 0 :
+                error = abs((self.xplus1 - self.x1)/ self.xplus1) * 100
+            else: 
+                error = 0
+                
+            
+            self.table.insert(
+                "",
+                "end",
+                values=(self.iter, round(self.x0, 3), round(self.fxminus1, 3), round(self.x1, 3), round(self.fx_val, 3), "-" if self.iter ==1 else round(error, 3))                              
+                 )
+            
+            if self.iter == 2:
+                self.iter2_val = [self.x0, self.fxminus1, self.x1, self.fx_val, self.xplus1]
+            
+            
+            self.xminus1 = self.x1
+            self.x = self.xplus1
+            self.iter = self.iter + 1
+        
+        
+        
+        
+    
+    def show_table(self):
+        self.error_message.configure(text="")
+        
+        #-- Destroy the table if exists
+        if hasattr(self, "table"):
+            self.table.destroy()
+        
+        self.table_columns = ("i", "X-1","f(x-1)","X", "f(x)", "epilson")
+        self.table = ttk.Treeview(self.visuals_frame,
+                                  columns=self.table_columns, 
+                                  show="headings")
+        
+        for column in (self.table_columns):
+            self.table.heading(f"{column}", text=column)
+            self.table.column(f"{column}", width=150, anchor="center")
+        
+        self.table.grid(sticky="nsew")
+        
+        
+    
+    
+        
     
 class guass_elimination(ctk.CTkFrame):
     def __init__(self, parent, controller, **args):
         super().__init__(parent, **args)
         self.controller = controller
-        self.label1 = ctk.CTkLabel(self, text="hello from guass elimination class")
-        self.label1.grid()
-
+        
     
 class lu_factor(ctk.CTkFrame):
     def __init__(self, parent, controller, **args):
