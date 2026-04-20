@@ -1114,14 +1114,126 @@ class secant_method(ctk.CTkFrame):
         self.table.grid(sticky="nsew")
         
         
-    
-    
-        
+
     
 class guass_elimination(ctk.CTkFrame):
     def __init__(self, parent, controller, **args):
         super().__init__(parent, **args)
         self.controller = controller
+        
+        
+        for i in range(10):
+            self.columnconfigure(i, weight=1)
+            if i % 2 ==0 and i <= 5 :
+              self.rowconfigure(i, weight=0)
+            else:
+              self.rowconfigure(i, weight=1)
+        
+        # for i in range(10):
+        #     self.columnconfigure(i, weight=1)
+        #     self.rowconfigure(i, weight=1)
+            
+        self.method_name = ctk.CTkLabel(self, text="Guass Elimination And Lu decomposition")
+        theme.label_title(self.method_name)
+        self.method_name.grid(row=0, column=0, columnspan=10)
+        
+        self.createMatrix(self,3, 0)
+        
+        # self.createMatrix(7, 3)
+        # ---- BUTTONS --------
+        
+        self.guass_elim_btn = ctk.CTkButton(self, text=" solve by Guass elimination", command=self.guass_elim)
+        self.lu_decomp_btn = ctk.CTkButton(self, text=" solve by LU Decompostion", command=self.lu_decomp)
+        self.clear_btn = ctk.CTkButton(self, text="Clear", command=self.clear)
+        
+        theme.button_primary(self.guass_elim_btn)
+        theme.button_primary(self.lu_decomp_btn)
+        theme.button_primary(self.clear_btn)
+        
+        
+        self.guass_elim_btn.grid(row=3, column=6, sticky="ew")
+        self.lu_decomp_btn.grid(row=4, column=6, sticky="ew")
+        self.clear_btn.grid(row=5, column=6, sticky="ew")
+        
+        
+        self.answer_frame = ctk.CTkFrame(self, bg_color="green", fg_color="red")
+        self.answer_frame.grid(row=5, rowspan=5, column=0, columnspan=8)
+        self.answers_frame = ctk.CTkFrame(self, bg_color="green", fg_color="red")
+        self.answers_frame.grid(row=5, rowspan=5, column=5, columnspan=5)
+        
+        for i in range(10):
+            self.answer_frame.rowconfigure(i, weight=1)
+            self.answer_frame.columnconfigure(i, weight=1)
+        
+        # self.createMatrix(self.answer_frame, 1, 0)
+        
+        
+    def createMatrix(self, parent ,br, bc):
+        
+        # ----------------Create the Matrix Layout -----------------
+        self.left_bracket = tk.Canvas(parent, width=20, height=100, bg="grey86", highlightthickness=0)
+        self.left_bracket.grid(row=br, rowspan=3, column=bc, sticky="ns")
+        
+        # ---- top Line ----
+        h = 300
+
+        # top
+        self.left_bracket.create_line(15, 5, 3, 5, width=4)
+
+        # vertical
+        self.left_bracket.create_line(5, 5, 5, h-5, width=4)
+
+        # bottom
+        self.left_bracket.create_line(3, h-5, 15, h-5, width=4)
+        
+        self.right_bracket = tk.Canvas(parent, width=20, height=100,bg="gray86" , highlightthickness=0)
+        self.right_bracket.grid(row=br, rowspan=3, column=bc+5, sticky="ns")
+
+        # top
+        self.right_bracket.create_line(0, 5, 17, 5, width=4)
+
+        # vertical
+        self.right_bracket.create_line(15, 5, 15, h-5, width=4)
+
+        # bottom
+        self.right_bracket.create_line(0, h-5, 17, h-5, width=4)
+        
+        self.matrix_labels = ["X1", "X2", "X3", "b"]
+        
+        for index, var in enumerate(self.matrix_labels):
+            self.matrix_label = ctk.CTkLabel(parent)
+            self.matrix_label.configure(text=var)
+            theme.label_black(self.matrix_label)
+            self.matrix_label.grid(row=br -1, column=bc+ index+1, padx=1, pady=1)
+        
+        # print(self.cget("fg_color"))
+        
+        for i in range(3):
+            for j in range(4):
+                self.entity = ctk.CTkEntry(parent, width=30)
+                theme.entry_default(self.entity)
+                self.entity.grid(row= br + i , column= bc + j +1, padx=1, pady=1)
+    
+    def guass_elim(self):
+        pass
+    
+    def lu_decomp(self):
+        pass
+    
+    def clear(self):
+        pass
+        
+                
+                
+       
+                    
+                
+            
+        
+        
+        
+        
+            
         
     
 class lu_factor(ctk.CTkFrame):
