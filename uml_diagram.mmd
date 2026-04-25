@@ -1,0 +1,122 @@
+classDiagram
+    class MainApp {
+        +__init__()
+        +side_bar: Sidebar
+        +display: DisplayWindow
+    }
+    
+    class Sidebar {
+        +__init__()
+        +controller: MainApp
+        +buttons_names: list
+        +buttons_names_dictionary: dict
+    }
+    
+    class DisplayWindow {
+        +__init__()
+        +controller: MainApp
+        +frames: dict
+        +show_frame(page)
+    }
+    
+    class Theme {
+        +COLORS: dict
+        +FONTS: dict
+        +SPACING: dict
+        +label_title(label)
+        +label_error(label)
+        +label_default(label)
+        +label_black(label)
+        +entry_default(entry)
+        +button_primary(button)
+        +button_secondary(button)
+    }
+    
+    class MethodFrame {
+        <<abstract>>
+        +__init__(parent, controller)
+        +controller: DisplayWindow
+        +clear_inputs()
+        +calculation()
+        +show_table()
+        +plot()
+        +clear_visuals()
+    }
+    
+    class bisection_method {
+        +f_stringvar: StringVar
+        +xl_var: StringVar
+        +xu_var: StringVar
+        +iter_var: StringVar
+        +error_message: CTkLabel
+        +table: Treeview
+        +fig: Figure
+        +ax: Axes
+    }
+    
+    class false_position {
+        +f_var: StringVar
+        +xl_var: StringVar
+        +xu_var: StringVar
+        +iter_var: StringVar
+        +error_message: CTkLabel
+        +table: Treeview
+        +fig: Figure
+        +ax: Axes
+    }
+    
+    class simple_point {
+        +f_var: StringVar
+        +g_var: StringVar
+        +x_var: StringVar
+        +epilson_var: StringVar
+        +error_message: CTkLabel
+        +table: Treeview
+    }
+    
+    class newtons_mathod {
+        +f_var: StringVar
+        +initial_guess_var: StringVar
+        +epson_var: StringVar
+        +error_message: CTkLabel
+        +table: Treeview
+        +symX: Symbol
+        +df: Expr
+    }
+    
+    class secant_method {
+        +f_var: StringVar
+        +xminus1_var: StringVar
+        +x_var: StringVar
+        +epilson_var: StringVar
+        +error_message: CTkLabel
+        +table: Treeview
+        +iter: int
+    }
+    
+    class Linear Algbera{
+        +matrix_var: StringVar
+        +vector_var: StringVar
+        +error_message: CTkLabel
+        +table: Treeview
+    }
+    
+    MainApp *-- Sidebar
+    MainApp *-- DisplayWindow
+    Sidebar --> MainApp
+    DisplayWindow --> MainApp
+    DisplayWindow *-- bisection_method
+    DisplayWindow *-- false_position
+    DisplayWindow *-- simple_point
+    DisplayWindow *-- newtons_mathod
+    DisplayWindow *-- secant_method
+    DisplayWindow *-- Linear Algebra
+    
+    bisection_method --|> MethodFrame
+    false_position --|> MethodFrame
+    simple_point --|> MethodFrame
+    newtons_mathod --|> MethodFrame
+    secant_method --|> MethodFrame
+    Linear Algebra --|> MethodFrame
+    
+    MethodFrame ..> Theme : uses

@@ -10,6 +10,7 @@ from theme import Theme
 import sympy as sp 
 
 
+
 ctk.set_appearance_mode("light")
 # ctk.set_default_color_theme("blue")
 
@@ -107,7 +108,7 @@ class Sidebar(ctk.CTkFrame):
             "SIMPLE FIXED POINT",
             "NEWTON'S METHOD",
             "SECANT METHOD",
-            "linear Algebric Methods"
+            "LINEAR ALGEBRA"
         )
         self.buttons_names_dictionary = {
             "BISECTION METHOD":bisection_method,
@@ -115,7 +116,7 @@ class Sidebar(ctk.CTkFrame):
             "SIMPLE FIXED POINT": simple_point,
             "NEWTON'S METHOD": newtons_mathod,
             "SECANT METHOD": secant_method,
-            "linear Algebric Methods":linear_algebra,  
+            "LINEAR ALGEBRA":linear_algebra    
         }
         
         self.buttons_names = list(self.buttons_names_dictionary.keys())
@@ -301,11 +302,6 @@ class bisection_method(ctk.CTkFrame):
 
     def calculation(self): 
         self.show_table()
-        # # ----clear the table -----
-        # for row in self.table.get_children():
-        #     self.table.delete(row) 
-           
-        # ----validate numeric inputs
         try: 
             xl = float(self.xl_var.get())
             xu = float(self.xu_var.get() )
@@ -724,6 +720,15 @@ class simple_point(ctk.CTkFrame):
             
             
                 
+            
+                
+            
+        
+        
+        
+        
+        
+        
     
     def show_table(self):
         self.error_message.configure(text="")
@@ -995,8 +1000,7 @@ class secant_method(ctk.CTkFrame):
         f"x2={round(x1,3)}-[{round(fx1,3)}({round(x0,3)}-{round(x1,3)})]/"
         f"[{round(fx0,3)}-{round(fx1,3)}]={round(x2,3)} |      "
         f"error=|{round(x2,3)}-{round(x1,3)}|={round(abs(x2-x1),3)}"
-    )
-)
+    ))
           
 
       else:
@@ -1111,6 +1115,491 @@ class secant_method(ctk.CTkFrame):
         self.table.grid(sticky="nsew")
         
         
+
+    
+class guass_elimination(ctk.CTkFrame):
+    def __init__(self, parent, controller, **args):
+        super().__init__(parent, **args)
+        self.controller = controller
+        
+        
+        for i in range(10):
+            self.columnconfigure(i, weight=1)
+            if i % 2 ==0 and i <= 5 :
+              self.rowconfigure(i, weight=0)
+            else:
+              self.rowconfigure(i, weight=1)
+        
+        # for i in range(10):
+        #     self.columnconfigure(i, weight=1)
+        #     self.rowconfigure(i, weight=1)
+            
+        self.method_name = ctk.CTkLabel(self, text="Guass Elimination And Lu decomposition")
+        theme.label_title(self.method_name)
+        self.method_name.grid(row=0, column=0, columnspan=10)
+        
+        self.createMatrix(self,3, 0)
+        
+        # self.createMatrix(7, 3)
+        # ---- BUTTONS --------
+        
+        self.guass_elim_btn = ctk.CTkButton(self, text=" solve by Guass ", command=self.guass)
+        self.lu_decomp_btn = ctk.CTkButton(self, text=" solve by LU Decompostion", command=self.lu_decomp)
+        self.clear_btn = ctk.CTkButton(self, text="Clear", command=self.clear)
+        
+        theme.button_primary(self.guass_elim_btn)
+        theme.button_primary(self.lu_decomp_btn)
+        theme.button_primary(self.clear_btn)
+        
+        
+        self.guass_elim_btn.grid(row=3, column=6, sticky="ew")
+        self.lu_decomp_btn.grid(row=4, column=6, sticky="ew")
+        self.clear_btn.grid(row=5, column=6, sticky="ew")
+        
+
+        self.answer_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.answer_frame.grid(row=6, rowspan=10, column=0, columnspan=10, sticky="ew")
+
+        for i in range(10):
+            self.answer_frame.rowconfigure(i, weight=1)
+            self.answer_frame.columnconfigure(i, weight=1)
+        
+        # self.createMatrix(self.answer_frame, 1, 0)
+        
+        
+    def createMatrix(self, parent ,br, bc):
+
+        # ----------------Create the Matrix Layout -----------------
+        self.left_bracket = tk.Canvas(parent, width=20, height=100,bg="gray86", highlightthickness=0)
+        self.left_bracket.grid(row=br, rowspan=3, column=bc, sticky="ns")
+
+        # ---- top Line ----
+        h = 300
+
+        # top
+        self.left_bracket.create_line(15, 5, 3, 5, width=4)
+
+        # vertical
+        self.left_bracket.create_line(5, 5, 5, h-5, width=4)
+
+        # bottom
+        self.left_bracket.create_line(3, h-5, 15, h-5, width=4)
+
+        self.right_bracket = tk.Canvas(parent, width=20, height=100,bg="gray86", highlightthickness=0)
+        self.right_bracket.grid(row=br, rowspan=3, column=bc+5, sticky="ns")
+
+        # top
+        self.right_bracket.create_line(0, 5, 17, 5, width=4)
+
+        # vertical
+        self.right_bracket.create_line(15, 5, 15, h-5, width=4)
+
+        # bottom
+        self.right_bracket.create_line(0, h-5, 17, h-5, width=4)
+
+        self.matrix_labels = ["X1", "X2", "X3", "b"]
+
+        for index, var in enumerate(self.matrix_labels):
+            self.matrix_label = ctk.CTkLabel(parent)
+            self.matrix_label.configure(text=var)
+            theme.label_black(self.matrix_label)
+            self.matrix_label.grid(row=br -1, column=bc+ index+1, padx=1, pady=1)
+
+        self.entries = []
+        for i in range(3):
+            row_entries = []
+            for j in range(4):
+                self.entity = ctk.CTkEntry(parent, width=30)
+                theme.entry_default(self.entity)
+                self.entity.grid(row= br + i , column= bc + j +1, padx=1, pady=1)
+                row_entries.append(self.entity)
+            self.entries.append(row_entries)
+
+    def guass(self):
+        try:
+            # Debug: Check if entries exist
+            if not hasattr(self, 'entries') or len(self.entries) == 0:
+                raise ValueError("Matrix entries not initialized. Please enter values in the matrix.")
+            
+            # Get the matrix from entries with validation
+            A = []
+            b = []
+            for i in range(3):
+                row = []
+                for j in range(3):
+                    # Debug: Check if entry exists
+                    if i >= len(self.entries) or j >= len(self.entries[i]):
+                        raise ValueError(f"Matrix entry not found at row {i+1}, column {j+1}")
+                    
+                    entry_val = self.entries[i][j].get().strip()
+                    if entry_val == "":
+                        raise ValueError(f"Matrix entry at row {i+1}, column {j+1} is empty")
+                    try:
+                        val = float(entry_val)
+                    except ValueError:
+                        raise ValueError(f"Invalid number at row {i+1}, column {j+1}: '{entry_val}'")
+                    row.append(val)
+                
+                # Add the completed row to A list
+                A.append(row)
+                
+                # Debug: Check if b entry exists
+                if i >= len(self.entries) or 3 >= len(self.entries[i]):
+                    raise ValueError(f"Matrix entry not found at row {i+1}, column 4 (b)")
+                    
+                b_val_entry = self.entries[i][3].get().strip()
+                if b_val_entry == "":
+                    raise ValueError(f"Matrix entry at row {i+1}, column 4 (b) is empty")
+                try:
+                    b_val = float(b_val_entry)
+                except ValueError:
+                    raise ValueError(f"Invalid number at row {i+1}, column 4 (b): '{b_val_entry}'")
+                b.append(b_val)
+
+            # Debug: Check individual entries before conversion
+            print(f"Debug: entries structure = {len(self.entries) if hasattr(self, 'entries') else 'None'} rows")
+            for i in range(3):
+                if hasattr(self, 'entries') and i < len(self.entries):
+                    print(f"Debug: Row {i+1} entries = {[self.entries[i][j].get().strip() for j in range(4)]}")
+            
+            print(f"Debug: A list = {A}, len = {len(A) if A else 0}")
+            print(f"Debug: b list = {b}, len = {len(b) if b else 0}")
+            
+            A = np.array(A, dtype=float)
+            b = np.array(b, dtype=float)
+            
+            print(f"Debug: A shape = {A.shape}, b shape = {b.shape}")
+
+            # Check matrix dimensions
+            if A.shape != (3, 3):
+                raise ValueError(f"Coefficient matrix A must be 3x3, got shape {A.shape}")
+            if b.shape != (3,):
+                raise ValueError(f"Vector b must have 3 elements, got shape {b.shape}")
+
+            # Gaussian elimination with pivoting
+            n = len(A)
+            for i in range(n):
+                # Find pivot
+                if i >= len(A) or i >= A.shape[1]:
+                    raise ValueError(f"Index out of bounds at step {i}")
+                    
+                max_row = i + np.argmax(np.abs(A[i:, i]))
+                if max_row >= len(A):
+                    raise ValueError(f"Pivot row {max_row} out of bounds at step {i}")
+                    
+                if np.abs(A[max_row, i]) < 1e-10:
+                    raise ValueError(f"Matrix is singular (zero pivot at row {max_row}, column {i})")
+
+                # Swap rows
+                if max_row != i:
+                    A[[i, max_row]] = A[[max_row, i]]
+                    b[[i, max_row]] = b[[max_row, i]]
+
+                # Eliminate
+                for j in range(i+1, n):
+                    if A[i, i] == 0:
+                        raise ValueError(f"Division by zero at step {i}, row {j}")
+                    factor = A[j, i] / A[i, i]
+                    A[j, i:] -= factor * A[i, i:]
+                    b[j] -= factor * b[i]
+
+            # Back substitution
+            x = np.zeros(n)
+            for i in range(n-1, -1, -1):
+                if A[i, i] == 0:
+                    raise ValueError(f"Division by zero during back substitution at row {i}")
+                x[i] = (b[i] - np.dot(A[i, i+1:], x[i+1:])) / A[i, i]
+
+            # Display augmented matrix after elimination and solution vector
+            self.clear_answer()
+
+            # Augmented matrix [A|b] after elimination
+            augmented = np.column_stack((A, b))
+            col_labels_aug = ["X1", "X2", "X3", "b"]
+            self.display_matrix(augmented, "Augmented Matrix After Elimination:", 0, 0, col_labels_aug)
+
+            # Solution vector
+            sol_matrix = [[x[i]] for i in range(3)]
+            col_labels_sol = ["X"]
+            self.display_matrix(sol_matrix, "Solution X:", 0, 1, col_labels_sol)
+
+        except ValueError as e:
+            self.clear_answer()
+            self.error_label = ctk.CTkLabel(self.answer_frame, text=f"Error: {str(e)}", font=("Arial", 14), text_color="red")
+            self.error_label.grid(row=0, column=0, columnspan=10, sticky="w")
+        except Exception as e:
+            self.clear_answer()
+            self.error_label = ctk.CTkLabel(self.answer_frame, text=f"Unexpected error: {str(e)}", font=("Arial", 14), text_color="red")
+            self.error_label.grid(row=0, column=0, columnspan=10, sticky="w")
+
+    def lu_decomp(self):
+        try:
+            # Debug: Check if entries exist
+            if not hasattr(self, 'entries') or len(self.entries) == 0:
+                raise ValueError("Matrix entries not initialized. Please enter values in the matrix.")
+            
+            A = []
+            b = []
+            for i in range(3):
+                row = []
+                for j in range(3):
+                    # Debug: Check if entry exists
+                    if i >= len(self.entries) or j >= len(self.entries[i]):
+                        raise ValueError(f"Matrix entry not found at row {i+1}, column {j+1}")
+                    
+                    entry_val = self.entries[i][j].get().strip()
+                    if entry_val == "":
+                        raise ValueError(f"Matrix entry at row {i+1}, column {j+1} is empty")
+                    try:
+                        val = float(entry_val)
+                    except ValueError:
+                        raise ValueError(f"Invalid number at row {i+1}, column {j+1}: '{entry_val}'")
+                    row.append(val)
+                
+                # Add the completed row to A list
+                A.append(row)
+                
+                # Debug: Check if b entry exists
+                if i >= len(self.entries) or 3 >= len(self.entries[i]):
+                    raise ValueError(f"Matrix entry not found at row {i+1}, column 4 (b)")
+                    
+                b_val_entry = self.entries[i][3].get().strip()
+                if b_val_entry == "":
+                    raise ValueError(f"Matrix entry at row {i+1}, column 4 (b) is empty")
+                try:
+                    b_val = float(b_val_entry)
+                except ValueError:
+                    raise ValueError(f"Invalid number at row {i+1}, column 4 (b): '{b_val_entry}'")
+                b.append(b_val)
+
+            # Debug: Check individual entries before conversion
+            print(f"Debug LU: entries structure = {len(self.entries) if hasattr(self, 'entries') else 'None'} rows")
+            for i in range(3):
+                if hasattr(self, 'entries') and i < len(self.entries):
+                    print(f"Debug LU: Row {i+1} entries = {[self.entries[i][j].get().strip() for j in range(4)]}")
+            
+            print(f"Debug LU: A list = {A}, len = {len(A) if A else 0}")
+            print(f"Debug LU: b list = {b}, len = {len(b) if b else 0}")
+            
+            A = np.array(A, dtype=float)
+            b = np.array(b, dtype=float)
+            
+            print(f"Debug LU: A shape = {A.shape}, b shape = {b.shape}")
+
+            if A.shape != (3, 3):
+                raise ValueError(f"Coefficient matrix A must be 3x3 (first 3 columns), got shape {A.shape}")
+            if b.shape != (3,):
+                raise ValueError(f"Constant vector b must have 3 elements (4th column), got shape {b.shape}")
+
+            n = len(A)
+            L = np.eye(n)
+            U = np.copy(A)
+
+            for i in range(n):
+                if i >= U.shape[0] or i >= U.shape[1]:
+                    raise ValueError(f"Index out of bounds at step {i}")
+                    
+                if abs(U[i, i]) < 1e-10:
+                    raise ValueError(f"Matrix is singular or requires pivoting (zero pivot at row {i}, column {i})")
+
+                for j in range(i+1, n):
+                    if j >= U.shape[0] or i >= U.shape[1]:
+                        raise ValueError(f"Index out of bounds at step {i}, row {j}")
+                    if U[i, i] == 0:
+                        raise ValueError(f"Division by zero at step {i}, row {j}")
+                    factor = U[j, i] / U[i, i]
+                    L[j, i] = factor
+                    U[j, i:] -= factor * U[i, i:]
+
+            y = np.zeros(n)
+            for i in range(n):
+                if i >= L.shape[0]:
+                    raise ValueError(f"Index out of bounds during forward substitution at step {i}")
+                y[i] = b[i] - np.dot(L[i, :i], y[:i])
+
+            x = np.zeros(n)
+            for i in range(n-1, -1, -1):
+                if i >= U.shape[0] or i >= U.shape[1]:
+                    raise ValueError(f"Index out of bounds during back substitution at step {i}")
+                if U[i, i] == 0:
+                    raise ValueError(f"Division by zero during back substitution at row {i}")
+                x[i] = (y[i] - np.dot(U[i, i+1:], x[i+1:])) / U[i, i]
+
+            # Display L, U, and solution vector
+            self.clear_answer()
+
+            # L matrix (ultra-compact)
+            self.display_matrix_compact(L, "L:", 0, 0)
+
+            # U matrix (ultra-compact)
+            self.display_matrix_compact(U, "U:", 0, 1)
+
+            # Solution vector (ultra-compact)
+            sol_matrix = [[x[i]] for i in range(3)]
+            col_labels_sol = ["X"]
+            self.display_matrix_compact(sol_matrix, "X:", 0, 2, col_labels_sol)
+
+        except ValueError as e:
+            self.clear_answer()
+            self.error_label = ctk.CTkLabel(self.answer_frame, text=f"Error: {str(e)}", font=("Arial", 14), text_color="red")
+            self.error_label.grid(row=0, column=0, columnspan=10, sticky="w")
+        except Exception as e:
+            self.clear_answer()
+            self.error_label = ctk.CTkLabel(self.answer_frame, text=f"Unexpected error: {str(e)}", font=("Arial", 14), text_color="red")
+            self.error_label.grid(row=0, column=0, columnspan=10, sticky="w")
+
+    def display_matrix(self, matrix, label_text, start_row, start_col, col_labels=None):
+        # Calculate proper bracket height to match matrix rows exactly
+        element_height = 25
+        bracket_height = len(matrix) * element_height + 10
+        
+        # Create main container frame for better spacing
+        matrix_container = ctk.CTkFrame(self.answer_frame, fg_color="transparent")
+        matrix_container.grid(row=start_row, column=start_col, sticky="w", padx=(0, 15))
+        
+        # Title label
+        title_label = ctk.CTkLabel(matrix_container, text=label_text, font=("Arial", 12, "bold"))
+        theme.label_default(title_label)
+        title_label.grid(row=0, column=0, sticky="w", pady=(0, 5))
+        
+        # Create visual brackets around the matrix with proper background
+        left_bracket = tk.Canvas(matrix_container, width=12, height=bracket_height,bg="gray86", highlightthickness=0)
+        left_bracket.grid(row=1, column=0, rowspan=len(matrix) + 2, sticky="ns", padx=(0, 2))
+        
+        # Draw left bracket with consistent color
+        left_bracket.create_line(10, 5, 2, 5, width=3, fill="black")
+        left_bracket.create_line(2, 5, 2, bracket_height - 5, width=3, fill="black")
+        left_bracket.create_line(2, bracket_height - 5, 10, bracket_height - 5, width=3, fill="black")
+        
+        right_bracket = tk.Canvas(matrix_container, width=12, height=bracket_height,bg="gray86", highlightthickness=0)
+        right_bracket.grid(row=1, column=len(matrix[0]) + 1, rowspan=len(matrix) + 2, sticky="ns", padx=(2, 0))
+        
+        # Draw right bracket with consistent color
+        right_bracket.create_line(2, 5, 10, 5, width=3, fill="black")
+        right_bracket.create_line(10, 5, 10, bracket_height - 5, width=3, fill="black")
+        right_bracket.create_line(10, bracket_height - 5, 2, bracket_height - 5, width=3, fill="black")
+        
+        # Add column labels if provided
+        if col_labels:
+            for idx, label in enumerate(col_labels):
+                col_label = ctk.CTkLabel(matrix_container, text=label, font=("Arial", 10, "bold"))
+                theme.label_black(col_label)
+                col_label.grid(row=1, column=idx + 1, padx=2, pady=1)
+            matrix_start_row = 2
+        else:
+            matrix_start_row = 1
+        
+        # Display matrix values with compact styling and 3 decimal places
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                # Round to 3 decimal places and format nicely
+                value = matrix[i][j]
+                if isinstance(value, (int, float)):
+                    formatted_value = f"{value:.3f}"
+                else:
+                    formatted_value = str(value)
+                
+                # Create compact styled label for each matrix element
+                val_label = ctk.CTkLabel(
+                    matrix_container, 
+                    text=formatted_value, 
+                    font=("Courier New", 10, "bold"),
+                    width=50,
+                    height=25
+                )
+                theme.label_black(val_label)
+                val_label.grid(row=matrix_start_row + i, column=j + 1, padx=2, pady=1)
+        
+        return start_row
+
+    def display_matrix_compact(self, matrix, label_text, start_row, start_col, col_labels=None):
+        # Calculate ultra-compact bracket height to match matrix rows exactly
+        element_height = 20
+        bracket_height = len(matrix) * element_height + 8
+        
+        # Create main container frame for better spacing
+        matrix_container = ctk.CTkFrame(self.answer_frame, fg_color="transparent")
+        matrix_container.grid(row=start_row, column=start_col, sticky="w", padx=(0, 10))
+        
+        # Title label
+        title_label = ctk.CTkLabel(matrix_container, text=label_text, font=("Arial", 10, "bold"))
+        theme.label_default(title_label)
+        title_label.grid(row=0, column=0, sticky="w", pady=(0, 3))
+        
+        # Create visual brackets around the matrix with ultra-small size and proper background
+        left_bracket = tk.Canvas(matrix_container, width=10, height=bracket_height,bg="gray86", highlightthickness=0)
+        left_bracket.grid(row=1, column=0, rowspan=len(matrix) + 2, sticky="ns", padx=(0, 1))
+        
+        # Draw left bracket with consistent color
+        left_bracket.create_line(8, 3, 2, 3, width=2, fill="black")
+        left_bracket.create_line(2, 3, 2, bracket_height - 3, width=2, fill="black")
+        left_bracket.create_line(2, bracket_height - 3, 8, bracket_height - 3, width=2, fill="black")
+        
+        right_bracket = tk.Canvas(matrix_container, width=10, height=bracket_height,bg="gray86", highlightthickness=0)
+        right_bracket.grid(row=1, column=len(matrix[0]) + 1, rowspan=len(matrix) + 2, sticky="ns", padx=(1, 0))
+        
+        # Draw right bracket with consistent color
+        right_bracket.create_line(2, 3, 8, 3, width=2, fill="black")
+        right_bracket.create_line(8, 3, 8, bracket_height - 3, width=2, fill="black")
+        right_bracket.create_line(8, bracket_height - 3, 2, bracket_height - 3, width=2, fill="black")
+        
+        # Add column labels if provided
+        if col_labels:
+            for idx, label in enumerate(col_labels):
+                col_label = ctk.CTkLabel(matrix_container, text=label, font=("Arial", 9, "bold"))
+                theme.label_black(col_label)
+                col_label.grid(row=1, column=idx + 1, padx=1, pady=1)
+            matrix_start_row = 2
+        else:
+            matrix_start_row = 1
+        
+        # Display matrix values with ultra-compact styling and 3 decimal places
+        for i in range(len(matrix)):
+            for j in range(len(matrix[i])):
+                # Round to 3 decimal places and format nicely
+                value = matrix[i][j]
+                if isinstance(value, (int, float)):
+                    formatted_value = f"{value:.3f}"
+                else:
+                    formatted_value = str(value)
+                
+                # Create ultra-compact styled label for each matrix element
+                val_label = ctk.CTkLabel(
+                    matrix_container, 
+                    text=formatted_value, 
+                    font=("Courier New", 9, "bold"),
+                    width=40,
+                    height=20
+                )
+                theme.label_black(val_label)
+                val_label.grid(row=matrix_start_row + i, column=j + 1, padx=1, pady=1)
+        
+        return start_row
+
+    def clear_answer(self):
+        for widget in self.answer_frame.winfo_children():
+            widget.destroy()
+
+    def clear(self):
+        for row in self.entries:
+            for entry in row:
+                entry.delete(0, tk.END)
+        self.clear_answer()
+        
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
 class linear_algebra(ctk.CTkFrame): 
     def __init__(self, parent, controller, **args):
         super().__init__(parent, **args)
@@ -1123,15 +1612,15 @@ class linear_algebra(ctk.CTkFrame):
             else:
                 self.rowconfigure(i, weight=1)
         
-        self.method_name = ctk.CTkLabel(self, text="Gauss Elimination And LU Decomposition")
+        self.method_name = ctk.CTkLabel(self, text="LINEAR ALGEBRA METHODS FOR SOLVING SYSTEMS OF EQUATIONS")
         theme.label_title(self.method_name)
         self.method_name.grid(row=0, column=0, columnspan=10)
         
         self.createMatrix(self, 3, 0)
         
         # Buttons
-        self.guass_elim_btn = ctk.CTkButton(self, text="Solve by Gauss", command=self.guass)
-        self.lu_decomp_btn = ctk.CTkButton(self, text="Solve by LU", command=self.lu_decomp)
+        self.guass_elim_btn = ctk.CTkButton(self, text="Solve by Gauss Elimination", command=self.guass)
+        self.lu_decomp_btn = ctk.CTkButton(self, text="Solve by LU Decomposition", command=self.lu_decomp)
         self.clear_btn = ctk.CTkButton(self, text="Clear", command=self.clear)
         
         theme.button_primary(self.guass_elim_btn)
@@ -1141,6 +1630,14 @@ class linear_algebra(ctk.CTkFrame):
         self.guass_elim_btn.grid(row=3, column=6, sticky="ew")
         self.lu_decomp_btn.grid(row=4, column=6, sticky="ew")
         self.clear_btn.grid(row=5, column=6, sticky="ew")
+        self.cramer_btn = ctk.CTkButton(self, text="Solve by Cramer's Rule", command=self.cramer)
+        theme.button_primary(self.cramer_btn)
+        self.cramer_btn.grid(row=3, column=8, sticky="ew")
+        
+        self.jordan_btn = ctk.CTkButton(self, text="Solve by Gauss-Jordan", command=self.gauss_jordan)
+        theme.button_primary(self.jordan_btn)
+        self.jordan_btn.grid(row=4, column=8, sticky="ew")
+
 
         self.answer_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.answer_frame.grid(row=6, rowspan=10, column=0, columnspan=10, sticky="ew")
@@ -1345,6 +1842,150 @@ class linear_algebra(ctk.CTkFrame):
             for entry in row:
                 entry.delete(0, tk.END)
         self.clear_answer()
+            
+
+    def cramer(self):
+        try:
+            A_list = []
+            b_list = []
+
+            # 1. Read all input FIRST
+            for i in range(3):
+                row = []
+                for j in range(3):
+                    val = self.entries[i][j].get().strip()
+                    if not val:
+                        raise ValueError(f"Empty entry at row {i+1}, col {j+1}")
+                    row.append(float(val))
+                A_list.append(row)
+
+                # Read the constant vector b
+                b_val = self.entries[i][3].get().strip()
+                if not b_val:
+                    raise ValueError(f"Empty b value at row {i+1}")
+                b_list.append(float(b_val))
+
+            # 2. Convert to NumPy arrays AFTER the loops
+            A = np.array(A_list, dtype=float)
+            b = np.array(b_list, dtype=float)
+
+            # 3. Perform Cramer's Rule logic
+            detA = np.linalg.det(A)
+
+            if abs(detA) < 1e-12:
+                raise ValueError("Determinant is zero (or near zero) → No unique solution.")
+
+            # Replace columns and calculate determinants
+            results = []
+            matrices = []
+            for i in range(3):
+                Ai = A.copy()
+                Ai[:, i] = b
+                detAi = np.linalg.det(Ai)
+                matrices.append((Ai, detAi))
+                results.append(detAi / detA)
+
+                # 4. UI Display logic
+                self.clear_answer()
+
+                # Display det(A)
+                self.display_matrix([[detA]], "det(A):", 0, 0)
+
+                # Display A1, A2, A3 and their determinants
+                for i, (Ai, detAi) in enumerate(matrices):
+                    self.display_matrix(Ai, f"A{i+1}:", 1, i)
+                    self.display_matrix([[detAi]], f"det(A{i+1}):", 2, i)
+
+                    # Display Final Solution
+                    sol = [[r] for r in results]
+                    self.display_matrix(sol, "Solution:", 1, 4, ["X"])
+
+        except Exception as e:
+            self.clear_answer()
+            # Ensure ctk is imported or use the appropriate library reference
+            ctk.CTkLabel(self.answer_frame, text=f"Error: {e}", text_color="red").grid(row=0, column=0)
+
+
+            
+
+    def gauss_jordan(self):
+        try:
+            A_list = []
+            b_list = []
+
+            # 1. Read input from the UI
+            for i in range(3):
+                # Read the 3x3 matrix coefficients
+                row = []
+                for j in range(3):
+                    val = self.entries[i][j].get().strip()
+                    if not val:
+                        raise ValueError(f"Empty entry at row {i+1}, col {j+1}")
+                    row.append(float(val))
+                A_list.append(row)
+
+                    # Read the constant vector b (index 3 in the UI row)
+                b_val = self.entries[i][3].get().strip()
+                if not b_val:
+                    raise ValueError(f"Empty b value at row {i+1}")
+                b_list.append(float(b_val))
+
+            # 2. Setup NumPy arrays
+            A = np.array(A_list, dtype=float)
+            b = np.array(b_list, dtype=float)
+            n = 3
+            operations = []
+
+            # Create augmented matrix [A | b]
+            Ab = np.hstack((A, b.reshape(-1, 1)))
+
+            # 3. Gauss-Jordan Elimination Logic
+            for i in range(n):
+                # Partial Pivoting: Find the row with the largest absolute value in the current column
+                max_row = i + np.argmax(abs(Ab[i:, i]))
+
+                if abs(Ab[max_row, i]) < 1e-12:
+                    raise ValueError("Matrix is singular or has no unique solution.")
+
+                # Swap rows if the max value isn't in the current row
+                if max_row != i:
+                    Ab[[i, max_row]] = Ab[[max_row, i]]
+                    operations.append(f"R{i+1} ↔ R{max_row+1}")
+
+                    # Normalize pivot row (Divide by the pivot element to get a 1)
+                pivot = Ab[i, i]
+                Ab[i] = Ab[i] / pivot
+                operations.append(f"R{i+1} = R{i+1} / {pivot:.3f}")
+
+                # Eliminate other rows (Get 0s above and below the pivot)
+                for j in range(n):
+                    if j != i:
+                        factor = Ab[j, i]
+                        Ab[j] = Ab[j] - factor * Ab[i]
+                        operations.append(f"R{j+1} = R{j+1} - ({factor:.3f})R{i+1}")
+
+            # 4. Display Results (Only once calculation is complete)
+            self.clear_answer()
+
+            # Extract the final column (solution vector)
+            x_solution = Ab[:, -1]
+
+            # Display the RREF matrix (Identity matrix) and the Solution vector
+            self.display_matrix(Ab[:, :-1], "RREF Matrix", 5, 0)
+            self.display_matrix([[xi] for xi in x_solution], "Solution", 5, 1, ["X"])
+
+            # Display the log of row operations
+            log_frame = ctk.CTkFrame(self.answer_frame, fg_color="transparent")
+            log_frame.grid(row=5, column=6, columnspan=2, sticky="w", pady=10)
+
+            ctk.CTkLabel(log_frame, text="Operations:", font=("Arial", 12, "bold")).grid(row=0, column=0, sticky="w")
+            for k, op in enumerate(operations):
+                ctk.CTkLabel(log_frame, text=op).grid(row=k+1, column=0, sticky="w")
+
+        except Exception as e:
+            self.clear_answer()
+            # Ensure ctk is correctly referenced based on your imports
+            ctk.CTkLabel(self.answer_frame, text=f"Error: {e}", text_color="red").grid(row=0, column=0)
 
 
 
@@ -1352,12 +1993,9 @@ class linear_algebra(ctk.CTkFrame):
 
 
 
-
-                
-                
 
 
 
 if __name__ == "__main__":
     app = MainApp()
-    app.mainloop() 
+    app.mainloop()
